@@ -49,6 +49,7 @@ int matrix[8][5];
 int currentShapeType;
 int rotateCount = 0;
 int miliseconds = 0;
+int playing = 1;
 
 struct point{
 	int row;
@@ -422,18 +423,23 @@ pushShapeToMatrix();
 }
 
 void removeRow(){
-	int i,j, rows=0;
+	int i,j, rows=0, check = 0, startRow=0;
 	for(i=0; i<8; i++){
 		int k = 0;
 		for(j=0; j<5; j++){
 			if(matrix[i][j] == 0)
 				k++;
 		}
-		if(k == 5)
+		if(k == 5){
 			rows++;
+		}
+		if(k==5 && check == 0){
+			check = 1;
+			startRow = i;
+		}
 	}
 	if(rows > 0){
-	for(i=0; i<8-rows; i++){
+	for(i=startRow; i<8-rows; i++){
 		for(j=0; j<5; j++){
 			matrix[i][j] = matrix[i+rows][j];
 			matrix[i+rows][j] = 1;
@@ -486,8 +492,11 @@ cleanBackShape();
 	}
 }
 
-void gameOver(){
-	
+void restart(){
+	resetMatrix(); 
+	generateShape(); 
+	setAllLeds(); 
+	playing = 1; 
 }
 /* USER CODE END 0 */
 
@@ -544,8 +553,8 @@ int main(void)
 			if(res == 0)
 				setAllLeds();
 			else{
-				gameOver();
-				break;
+				playing = 0;
+				while(playing);
 			}
 		}
 		
@@ -757,7 +766,7 @@ UNUSED(GPIO_Pin);
 	}
 	miliseconds = HAL_GetTick();
 	switch(GPIO_Pin){
-		case START_Pin:   break;
+		case START_Pin: restart(); break;
 		case ROTATE_Pin:  rotate(); break;
 		case LEFT_Pin: shiftLeft(); break;
 		case R_GHT_Pin: shiftRight(); break;
